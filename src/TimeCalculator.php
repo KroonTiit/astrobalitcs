@@ -8,61 +8,69 @@
         $dayTime = 0;
         $nightTime = 0;
 
-        if (isStartDuringDay($startTime) && isEndDuringDay($endTime)) {
+        if (isStartDuringDay($startTime, $sixAM, $tenPM) && isEndDuringDay($endTime, $sixAM, $tenPM)) {
             $dayTime = calculateTimeDiff($endTime, $startTime);
 
-        } elseif (isStartAtNight($startTime) && isEndAtNight($endTime)) {
+        } elseif (!isStartDuringDay($startTime, $sixAM, $tenPM) && !isEndDuringDay($endTime, $sixAM, $tenPM)) {
             if(($startTime >= $tenPM) && ($sixAM >= $endTime)) {
-                // algus pärast 22 lõpp enne 06:00
+                // start afther 22:00  end before 06:00
 
                 $aftherMidnight = date_diff($endTime, $twelvePM, true);
                 $beforeMidnight = date_diff($startTime, $twelvePM->modify('+1 day'), true);
             
-                $nightTime = calculateTimeOverMidnight($aftherMidnight, $beforeMidnight);
+                $nightTime = calculateTimeDiffOverMidnight($aftherMidnight, $beforeMidnight);
 
             } else {
-                // algus ja lõpp enne 06:00
+                // both before 06:00 but afther 00:00
+                if ($startTime >= $endTime) {
+                    $aftherMidnight = date_diff($startTime, $sixAM, true);
+                    $midnightToEndTime = calculateTimeDiff($endTime, $twelvePM);
+                    $beforeMidnight = date_diff($tenPM, $twelvePM->modify('+1 day'), true);
 
-                $nightTime = calculateTimeDiff($endTime, $startTime);
+                    $nightTime = calculateTimeDiffOverMidnight($aftherMidnight, $beforeMidnight) + $midnightToEndTime;
+                    $dayTime = calculateTimeDiff($sixAM, $tenPM);
+                } else {
+                    $nightTime = calculateTimeDiff($endTime, $startTime);
+                }
             }
-        } elseif (isStartDuringDay($startTime) && isEndAtNight($endTime)) {
+        } elseif (isStartDuringDay($startTime, $sixAM, $tenPM) && !isEndDuringDay($endTime, $sixAM, $tenPM)) {
             $dayTime = calculateTimeDiff($tenPM, $startTime);
             
             if($endTime >= $tenPM){
-                // lõpp pärast 22:00
+                // end after 22:00
 
                 $nightTime = calculateTimeDiff($tenPM, $endTime);
 
             } else {
-                // lõpp enne 06:00
+                // end before 06:00
 
                 $aftherMidnight = date_diff($endTime, $twelvePM, true);
                 $beforeMidnight = date_diff($tenPM, $twelvePM->modify('+1 day'), true);
                 
-                $nightTime = calculateTimeOverMidnight($aftherMidnight, $beforeMidnight);
+                $nightTime = calculateTimeDiffOverMidnight($aftherMidnight, $beforeMidnight);
             }
-        } elseif (isStartAtNight($startTime) && isEndDuringDay($endTime)) {
+        } elseif (!isStartDuringDay($startTime, $sixAM, $tenPM) && isEndDuringDay($endTime, $sixAM, $tenPM)) {
             $dayTime = calculateTimeDiff($sixAM, $endTime);
             
             if($startTime <= $sixAM) {
-                // algus enne 06:00
+                // start before 06:00
 
                 $nightTime = calculateTimeDiff($sixAM, $startTime);
                 
             } else {
-                // algus pärast 22:00
+                // start afther 22:00
 
                 $aftherMidnight = date_diff($sixAM, $twelvePM, true);
                 $beforeMidnight = date_diff($startTime, $twelvePM->modify('+1 day'), true);
 
-                $nightTime = calculateTimeOverMidnight($aftherMidnight, $beforeMidnight);
+                $nightTime = calculateTimeDiffOverMidnight($aftherMidnight, $beforeMidnight);
             }
         }
 
         return ['day' => $dayTime, 'night' => $nightTime];
     }
-    
-    function isStartDuringDay() {
+
+    function isStartDuringDay($startTime, $sixAM, $tenPM) {
         if ($sixAM <= $startTime  && $startTime <= $tenPM){
             return true;
         }
@@ -70,7 +78,7 @@
         return false;
     }
 
-    function isEndDuringDay() {
+    function isEndDuringDay($endTime, $sixAM, $tenPM) {
         if ($sixAM <= $endTime && $endTime <= $tenPM) {
             return true;
         }
@@ -78,29 +86,14 @@
         return false;
     }
 
-    function isStartAtNight() {
-        if ($sixAM >= $startTime || $startTime >= $tenPM) {
-            return true;
-        }
 
-        return false;
-    }
-
-    function isEndAtNight() {
-        if ($sixAM >= $endTime || $endTime >= $tenPM) {
-            return true;
-        }
-
-        return false;
-    }
-
-    function calculateTimeOverMidnight($aftherMidnight, $beforeMidnight) {
+    function calculateTimeDiffOverMidnight($aftherMidnight, $beforeMidnight) {
         $totalHours = $aftherMidnight->h + $beforeMidnight->h;
         $totalMinutes = $aftherMidnight->i + $beforeMidnight->i;
 
         if ($totalMinutes >= 60) {
-            $totalHours += intdiv($totalMinutes, 60);  
-            $totalMinutes = $totalMinutes % 60;        
+            $totalHours += intdiv($totalMinutes, 60);
+            $totalMinutes = $totalMinutes % 60;
         }
 
         return inToDecimalTime($totalHours, $totalMinutes);
@@ -115,7 +108,7 @@
         $decimalMinutes = $minutes / 60;
         $totalHours = $hours + $decimalMinutes;
         
-        return number_format($totalHours, 1);
+        return round($totalHours, 2);
     }
 
     function validateTimeInput($time) {
