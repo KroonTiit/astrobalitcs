@@ -3,12 +3,10 @@
 
         if (isset($_POST['endTime']) && isset($_POST['startTime'])) {
             if (validateTimeInput($_POST['startTime']) || validateTimeInput($_POST['endTime'])){
-                $startTime = $_POST['startTime'];
-                $endTime = $_POST['endTime'];
                 $calculatedTime = calculateDayAndNightTime($_POST['startTime'], $_POST['endTime']);
-                
+                $message =  'Algusaeg: '.$_POST['startTime'].' Lõppaeg: '.$_POST['endTime'];
             } else {
-                echo "Sisestage aeg 15 minutiliste intervallidena HH:MM formaadis.";
+                $message =  "Sisestage aeg 15 minutiliste intervallidena HH:MM formaadis.";
             }
         }
         ?>
@@ -58,7 +56,7 @@
                     </form>
 
                     <div class="result-panel container-sm">
-                        <p><?php echo isset($_POST['startTime']) ? 'Algusaeg: '.$_POST['startTime'] : '' ?> <?php echo isset($_POST['startTime']) ? 'Lõppaeg: '.$_POST['endTime'] : '' ?></p>
+                        <p><?php echo $message ?></p>
                         <h3>Päevane aeg: <?php echo isset($calculatedTime['day']) ? $calculatedTime['day']. ' tundi' : '' ?></h3>
                         <h3>Öine aeg: <?php echo isset($calculatedTime['night']) ? $calculatedTime['night']. ' tundi' : '' ?></p>
                     </div>
