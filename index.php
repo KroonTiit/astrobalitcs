@@ -1,3 +1,17 @@
+<?php 
+        require_once 'TimeCalculator.php';
+
+        if (isset($_POST['endTime']) && isset($_POST['startTime'])) {
+            if (validateTimeInput($_POST['startTime']) || validateTimeInput($_POST['endTime'])){
+                $startTime = date_create_from_format('H:i', $_POST['startTime']);
+                $endTime = date_create_from_format('H:i', $_POST['endTime']);
+                $calculatedTime = calculateDayAndNightTime($_POST['startTime'], $_POST['endTime']);
+
+            } else {
+                echo "Sisestage aeg 15 minutiliste intervallidena HH:MM formaadis.";
+            }
+        }
+        ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,7 +28,7 @@
 </head>
 <body>
     <h1>Astrokell</h1>
-    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"])?>" method="GET">
+    <form method="post">
         <div class="form-row align-items-center">
             <div class="col-auto">
                 <input class="timepicker" type="text" id="startTime" name="startTime" placeholder="Algusaeg">
@@ -30,121 +44,12 @@
     </form>
 
     <div class="form-col align-items-center">
-        <?php 
-        $dayTime = null;
-        $nightTime = null;
-
-        if (isset($_GET['endTime']) && isset($_GET['startTime'])) {
-            $startTime = date_create_from_format('H:i', $_GET['startTime']);
-            $endTime = date_create_from_format('H:i', $_GET['endTime']);
-            $sixAM = date_create_from_format('H:i', '06:00');
-            $tenPM = date_create_from_format('H:i', '22:00');
-            $twelvePM = date_create_from_format('H:i', '00:00');
-
-            if ( ($sixAM <= $startTime  && $startTime <= $tenPM) && ($sixAM <= $endTime && $endTime <= $tenPM) ) {
-            //  mõlemad päeva aja sees
-                $diff = date_diff($endTime, $startTime, true);
-                $dayTime = $diff->format("%h tundi %i minutit");
-                $nightTime = 0;
-            } elseif(($sixAM >= $startTime || $startTime >= $tenPM) && ($sixAM >= $endTime || $endTime >= $tenPM)) {
-                // mõlemad öö aja sees
-                $dayTime = 0;
-               
-                if(($startTime >= $tenPM) && ($sixAM >= $endTime)) {
-                    // algus pärast 22 lõpp enne 06:00
-                    $aftherMidnight = date_diff($endTime, $twelvePM, true);
-                    $beforeMidnight = date_diff($startTime, $twelvePM->modify('+1 day'), true);
-                 
-                    $totalHours = $aftherMidnight->h + $beforeMidnight->h;
-                    $totalMinutes = $aftherMidnight->i + $beforeMidnight->i;
-
-                    if ($totalMinutes >= 60) {
-                        $totalHours += intdiv($totalMinutes, 60);  
-                        $totalMinutes = $totalMinutes % 60;        
-                    }
-                    $nightTime = $totalHours. " hours ". $totalMinutes." minutes";
-                } else {
-                    // algus ja lõpp enne 06:00
-                    $diff = date_diff($endTime, $startTime, true);
-                    $nightTime = $diff->format("%h tundi %i minutit");
-                }
-
-            } elseif(($sixAM <= $startTime  && $startTime <= $tenPM) && ($sixAM >= $endTime || $endTime >= $tenPM)) {
-                // algus päeval lõpp öösel
-                $diff = date_diff($tenPM, $startTime, true);
-                $dayTime = $diff->format("%h hours %i minutes");
-                
-                if($endTime >= $tenPM){
-                    // lõpp pärast 22:00
-                    $diff = date_diff($tenPM, $endTime, true);
-                    $nightTime = $diff->format("%h hours %i minutes");
-                } else {
-                    // lõpp enne 06:00
-                    $aftherMidnight = date_diff($endTime, $twelvePM, true);
-                    $beforeMidnight = date_diff($tenPM, $twelvePM->modify('+1 day'), true);
-
-                    $totalHours = $aftherMidnight->h + $beforeMidnight->h;
-                    $totalMinutes = $aftherMidnight->i + $beforeMidnight->i;
-
-                    if ($totalMinutes >= 60) {
-                        $totalHours += intdiv($totalMinutes, 60);  
-                        $totalMinutes = $totalMinutes % 60;        
-                    }
-                    
-                    $nightTime = $totalHours. " hours ". $totalMinutes." minutes";
-                }
-                
-            } elseif(($sixAM >= $startTime || $startTime >= $tenPM) && ($sixAM <= $endTime && $endTime <= $tenPM)) {
-                // algus öösel lõpp päeval
-
-                $diff = date_diff($sixAM, $endTime, true);
-                $dayTime = $diff->format("%h hours %i minutes");
-                
-                if($startTime <= $sixAM) {
-                    // algus enne 06:00
-                    $diff = date_diff($sixAM, $startTime, true);
-                    $nightTime = $diff->format("%h hours %i minutes");
-                } else {
-                    // algus pärast 22:00
-                    $aftherMidnight = date_diff($sixAM, $twelvePM, true);
-                    $beforeMidnight = date_diff($startTime, $twelvePM->modify('+1 day'), true);
-
-                    $totalHours = $aftherMidnight->h + $beforeMidnight->h;
-                    $totalMinutes = $aftherMidnight->i + $beforeMidnight->i;
-
-                    if ($totalMinutes >= 60) {
-                        $totalHours += intdiv($totalMinutes, 60);  
-                        $totalMinutes = $totalMinutes % 60;        
-                    }
-                    $nightTime = $totalHours. " hours ". $totalMinutes." minutes";
-                }
-            } 
-            else {
-                $dayTime = 0;
-                $nightTime = 0;
-                echo "error in logic";
-            }
-        } else {
-            echo "Vali nii algus kui ka lõpp aeg";
-        } 
-        ?>
-
         <div class="col-auto">
-            day time: <?php echo $dayTime ?>
+            päevane aeg: <?php echo isset($calculatedTime['day']) ? $calculatedTime['day']. ' tundi' : '' ?>
         </div>
         <div class="col-auto">
-            night time: <?php echo $nightTime ?>
+            öine aeg: <?php echo isset($calculatedTime['night']) ? $calculatedTime['night']. ' tundi' : '' ?>
         </div>
     </div>
 </body>
-<script>
-    $('.timepicker').timepicker({
-        timeFormat: 'HH:mm',
-        interval: 15,
-        dynamic: false,
-        dropdown: true,
-        scrollbar: true
-    });
-    
-</script>
 </html>
