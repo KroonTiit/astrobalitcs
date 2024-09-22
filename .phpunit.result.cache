@@ -1,0 +1,1 @@
+{"version":1,"defects":{"TimeCalculatorTest::testCalculateDayAndNightTime":7},"times":{"TimeCalculatorTest::testValidateTimeInput":0.004,"TimeCalculatorTest::testCalculateDayAndNightTime":0}}
