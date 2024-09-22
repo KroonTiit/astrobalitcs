@@ -1,6 +1,6 @@
 <?php 
         require_once 'src/TimeCalculator.php';
-
+        $message = '';
         if (isset($_POST['endTime']) && isset($_POST['startTime'])) {
             if (validateTimeInput($_POST['startTime']) || validateTimeInput($_POST['endTime'])){
                 $calculatedTime = calculateDayAndNightTime($_POST['startTime'], $_POST['endTime']);

@@ -16,6 +16,11 @@ Väljund:
 öö: 4,5 tundi
 päev: 8 tundi
 
-Testid on loodud PHPUnit-iga. Testide käivitamiseks jooksutada projekti juur kaustas 
+Package manageriks on [Composer](https://getcomposer.org/).
 
-`./vendor/bin/phpunit`
+Testide on loomiseks on kasutusel [PHPUnit 11](https://phpunit.de/getting-started/phpunit-11.html).
+
+Testide käivitamiseks jooksutada projekti juur kaustas:
+
+1) `composer install`
+3) `./vendor/bin/phpunit`
