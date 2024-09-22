@@ -12,6 +12,7 @@
             $dayTime = calculateTimeDiff($endTime, $startTime);
 
         } elseif (!isStartDuringDay($startTime, $sixAM, $tenPM) && !isEndDuringDay($endTime, $sixAM, $tenPM)) {
+
             if(($startTime >= $tenPM) && ($sixAM >= $endTime)) {
                 // start afther 22:00  end before 06:00
 
@@ -22,15 +23,21 @@
 
             } else {
                 // both before 06:00 but afther 00:00
-                if ($startTime >= $endTime) {
-                    $aftherMidnight = date_diff($startTime, $sixAM, true);
-                    $midnightToEndTime = calculateTimeDiff($endTime, $twelvePM);
-                    $beforeMidnight = date_diff($tenPM, $twelvePM->modify('+1 day'), true);
+                if ($startTime <= $endTime) {
+                    $dayTime = calculateTimeDiff($sixAM, $tenPM);
+                    $nightTime = calculateTimeDiff($endTime, $startTime) - $dayTime;
 
+                } else {
+                    $midnightToEndTime = 0;
+                    if ($startTime >= $endTime) {
+                        $midnightToEndTime = calculateTimeDiff($endTime, $twelvePM);
+                    }
+                    $aftherMidnight = date_diff($startTime, $sixAM, true);
+                    $beforeMidnight = date_diff($tenPM, $twelvePM->modify('+1 day'), true);
+                    
                     $nightTime = calculateTimeDiffOverMidnight($aftherMidnight, $beforeMidnight) + $midnightToEndTime;
                     $dayTime = calculateTimeDiff($sixAM, $tenPM);
-                } else {
-                    $nightTime = calculateTimeDiff($endTime, $startTime);
+                    
                 }
             }
         } elseif (isStartDuringDay($startTime, $sixAM, $tenPM) && !isEndDuringDay($endTime, $sixAM, $tenPM)) {
@@ -56,7 +63,6 @@
                 // start before 06:00
 
                 $nightTime = calculateTimeDiff($sixAM, $startTime);
-                
             } else {
                 // start afther 22:00
 
@@ -70,16 +76,16 @@
         return ['day' => $dayTime, 'night' => $nightTime];
     }
 
-    function isStartDuringDay($startTime, $sixAM, $tenPM) {
-        if ($sixAM <= $startTime  && $startTime <= $tenPM){
+    function isStartDuringDay($startTime, $dayStart, $dayEnd) {
+        if ($dayStart <= $startTime  && $startTime <= $dayEnd){
             return true;
         }
 
         return false;
     }
 
-    function isEndDuringDay($endTime, $sixAM, $tenPM) {
-        if ($sixAM <= $endTime && $endTime <= $tenPM) {
+    function isEndDuringDay($endTime, $dayStart, $dayEnd) {
+        if ($dayStart <= $endTime && $endTime <= $dayEnd) {
             return true;
         }
 
