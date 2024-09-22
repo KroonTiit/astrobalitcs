@@ -14,9 +14,9 @@
 <html lang="en">
 <head>
     <script>
-        <?php if ( isset($_POST["scrollPosition"] ) ): ?>
-        window.scrollTo( 0, <?php echo intval( $_POST["scrollPosition"] ); ?> );
-    <?php endif; ?>
+        <?php if (isset($_POST["scrollPosition"])): ?>
+        window.scrollTo( 0, <?php echo intval($_POST["scrollPosition"]); ?> );
+        <?php endif; ?>
 
     </script>
     <meta charset="UTF-8">
@@ -87,7 +87,7 @@
         jQuery(this).find( ".scrollPosition" ).val( window.scrollY );
     });
     <?php if ( isset($_POST["scrollPosition"] ) ): ?>
-        // JUMP BACK TO SCROLL LOCATION WHEN FORM WAS SUBMITTED
+        // scrolli tagasi saadetud vormi asukohta
         window.scrollTo( 0, <?php echo intval( $_POST["scrollPosition"] ); ?> );
     <?php endif; ?>
 </script>
